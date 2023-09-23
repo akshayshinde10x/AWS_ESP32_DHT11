@@ -5,7 +5,7 @@
 #include "WiFi.h"
  
 #include "DHT.h"
-#define DHTPIN 2     // Digital pin connected to the DHT sensor
+#define DHTPIN 4     // Digital pin connected to the DHT sensor
 #define DHTTYPE DHT11   // DHT 11
  
 #define AWS_IOT_PUBLISH_TOPIC   "MSDS/pub"
@@ -13,7 +13,10 @@
  
 float h ;
 float t;
- 
+
+const int output26 = 2;
+const int output27 = 16;
+
 DHT dht(DHTPIN, DHTTYPE);
  
 WiFiClientSecure net = WiFiClientSecure();
@@ -83,10 +86,24 @@ void messageHandler(char* topic, byte* payload, unsigned int length)
   deserializeJson(doc, payload);
   const char* message = doc["message"];
   Serial.println(message);
+  String action = message;
+  if (action == "ON") {
+    Serial.println("GPIO 2 on");
+    digitalWrite(output26, HIGH);
+  } else if (action == "OFF") {
+    Serial.println("GPIO 2 off");
+    digitalWrite(output26, LOW);
+  }
 }
  
 void setup()
 {
+  pinMode(output26, OUTPUT);
+  pinMode(output27, OUTPUT);
+  // Set outputs to LOW
+  digitalWrite(output26, LOW);
+  digitalWrite(output27, LOW);
+  
   Serial.begin(115200);
   connectAWS();
   dht.begin();
